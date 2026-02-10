@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>App Competição TODOS X TODOS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+      @media print {
+        @page { size: auto; margin: 10mm; }
+        
+        /* Reset fundamental cores */
+        html, body, #root, main, .min-h-screen {
+          background-color: white !important;
+          color: black !important;
+          background-image: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          height: auto !important;
+          width: 100% !important;
+          overflow: visible !important;
+          display: block !important;
+        }
+
+        /* Force all elements to overflow visibly */
+        * {
+            overflow: visible !important;
+            height: auto !important;
+            max-height: none !important;
+        }
+
+        /* Hide Navigation and Buttons */
+        header, footer, button, .no-print, input[type="file"] { 
+          display: none !important; 
+        }
+
+        /* Typography - Force Black */
+        h1, h2, h3, h4, h5, h6, p, span, div, label, li {
+          color: black !important;
+          text-shadow: none !important;
+          filter: none !important;
+        }
+
+        /* Layout Resets for Print */
+        .grid {
+          display: block !important;
+        }
+        .grid > div {
+          break-inside: avoid;
+          margin-bottom: 15px;
+          border-bottom: 1px solid #ddd;
+          padding-bottom: 10px;
+        }
+
+        /* Input Fields - Look like text */
+        input, select {
+          background: transparent !important;
+          border: none !important;
+          border-bottom: 1px dotted #ccc !important;
+          color: black !important;
+          font-weight: bold !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          appearance: none;
+          -moz-appearance: none;
+          -webkit-appearance: none;
+        }
+        input[type="number"] {
+            text-align: right;
+        }
+
+        /* Table Optimization */
+        table {
+          width: 100% !important;
+          border-collapse: collapse !important;
+          margin-top: 10px;
+        }
+        th, td {
+          border: 1px solid black !important;
+          padding: 5px !important;
+          color: black !important;
+          font-size: 11pt !important;
+        }
+        thead {
+            background-color: #f0f0f0 !important;
+        }
+
+        /* Specific Component Overrides */
+        .bg-gray-900, .bg-gray-800, .bg-gray-700, .bg-indigo-600, .bg-blue-600, .bg-green-600, .bg-red-600, .bg-yellow-400, .bg-teal-700 {
+          background-color: transparent !important;
+          color: black !important;
+          box-shadow: none !important;
+          border: none !important;
+        }
+        
+        /* Enhance visibility of section headers */
+        h2, h3 {
+            border-bottom: 2px solid black;
+            padding-bottom: 5px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* Checkboxes */
+        input[type="checkbox"] {
+            border: 1px solid black !important;
+            appearance: auto !important; 
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-900 text-white">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

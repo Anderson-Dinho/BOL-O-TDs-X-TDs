@@ -1,0 +1,5 @@
+{
+  "name": "Copy of App Competição TODOS X TODOS",
+  "description": "An offline-first application for managing 'Todos x Todos' style team roping competitions, including competitor registration, automated pairing based on handicap, time tracking, and final classification.",
+  "requestFramePermissions": []
+}
