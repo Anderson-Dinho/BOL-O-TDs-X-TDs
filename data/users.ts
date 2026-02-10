@@ -1,7 +1,7 @@
 import { User } from '../types';
 
 // MUDANÇA DE CONFIGURAÇÃO DE ACESSO
-// Data da geração: 10/02/2026, 14:10:51
+// Data da geração: 10/02/2026, 14:16:04
 
 export const SYSTEM_CONFIG = {
   active: true // SISTEMA LIBERADO
@@ -9,9 +9,9 @@ export const SYSTEM_CONFIG = {
 
 export const INITIAL_USERS: User[] = [
   {
-    "username": "AndersonSilva",
-    "password": "admin",
-    "role": "admin",
+    "username": "tiao",
+    "password": "tiao",
+    "role": "organizer",
     "isActive": true
   },
   {
@@ -21,9 +21,9 @@ export const INITIAL_USERS: User[] = [
     "isActive": true
   },
   {
-    "username": "tiao",
-    "password": "tiao",
-    "role": "organizer",
+    "username": "AndersonSilva",
+    "password": "admin",
+    "role": "admin",
     "isActive": true
   }
 ];
