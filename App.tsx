@@ -137,7 +137,8 @@ function App() {
   };
 
   const handleDeleteUser = (usernameToDelete: string) => {
-    setLocalUsers(prev => prev.filter(u => u.username !== usernameToDelete));
+    // Uso toLowerCase para garantir que a exclusão funcione mesmo se houver diferenças de caixa
+    setLocalUsers(prev => prev.filter(u => u.username.toLowerCase() !== usernameToDelete.toLowerCase()));
   };
 
   if (!isLoggedIn) {

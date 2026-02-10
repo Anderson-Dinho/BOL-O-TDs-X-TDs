@@ -67,11 +67,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ users, onUpdateUser, on
       setHasUnsavedChanges(true);
   };
 
-  const deleteUserHandler = (username: string) => {
-      if(window.confirm(`Tem certeza que deseja remover ${username}?`)) {
-          onDeleteUser(username);
-          setHasUnsavedChanges(true);
-      }
+  const deleteUserHandler = (e: React.MouseEvent, username: string) => {
+      e.stopPropagation(); // Impede propagação para a linha da tabela
+      e.preventDefault();
+      
+      onDeleteUser(username);
+      setHasUnsavedChanges(true);
   }
 
   const generateConfigCode = () => {
@@ -224,14 +225,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ users, onUpdateUser, on
                         </thead>
                         <tbody className="divide-y divide-gray-700">
                             {users.map((user) => {
-                                const isMe = user.username === 'AndersonSilva'; // Admin principal hardcoded ou vindo de prop
+                                const isMe = user.username === 'AndersonSilva'; // Admin principal
                                 return (
-                                <tr key={user.username} className={`group hover:bg-gray-700/30 transition ${!user.isActive ? 'opacity-60 bg-red-900/10' : ''}`}>
-                                    <td className="p-3">
+                                <tr key={user.username} className={`group transition border-b border-gray-700/50 hover:bg-gray-700/30 ${!user.isActive ? 'bg-red-900/5' : ''}`}>
+                                    <td className={`p-3 ${!user.isActive ? 'opacity-50' : ''}`}>
                                         <div className="font-bold text-white text-sm">{user.username}</div>
                                         <div className="text-xs text-gray-500 font-mono select-all">Pwd: {user.password}</div>
                                     </td>
-                                    <td className="p-3">
+                                    <td className={`p-3 ${!user.isActive ? 'opacity-50' : ''}`}>
                                         <span onClick={() => !isMe && toggleUserRole(user)} className={`cursor-pointer px-2 py-1 rounded text-xs font-bold border ${user.role === 'admin' ? 'bg-purple-900/30 text-purple-300 border-purple-800' : 'bg-blue-900/30 text-blue-300 border-blue-800'}`}>
                                             {user.role === 'admin' ? 'ADMIN' : 'ORG'}
                                         </span>
@@ -244,20 +245,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ users, onUpdateUser, on
                                         >
                                             <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ml-1 ${user.isActive ? 'translate-x-5' : 'translate-x-0'}`} />
                                         </button>
-                                        <div className="text-[10px] mt-1 font-bold">
+                                        <div className={`text-[10px] mt-1 font-bold ${!user.isActive ? 'opacity-50' : ''}`}>
                                             {user.isActive ? <span className="text-green-500">ATIVO</span> : <span className="text-red-500">SUSPENSO</span>}
                                         </div>
                                     </td>
-                                    <td className="p-3 text-right text-xs">
+                                    <td className={`p-3 text-right text-xs ${!user.isActive ? 'opacity-50' : ''}`}>
                                         {formatDate(user.lastLogin)}
                                     </td>
-                                    <td className="p-3 text-right">
+                                    <td className="p-3 text-right relative z-10">
                                         <button 
-                                            onClick={() => deleteUserHandler(user.username)}
-                                            className="text-gray-500 hover:text-red-400 p-2 rounded hover:bg-gray-700 transition"
-                                            title="Remover permanentemente"
+                                            type="button"
+                                            onClick={(e) => !isMe && deleteUserHandler(e, user.username)}
+                                            disabled={isMe}
+                                            className={`p-2 rounded transition flex items-center justify-center ml-auto ${
+                                                isMe 
+                                                ? 'text-gray-600 cursor-not-allowed opacity-20' 
+                                                : 'bg-red-600 text-white hover:bg-red-700 hover:scale-110 cursor-pointer shadow-md border border-red-500'
+                                            }`}
+                                            title={isMe ? "Não é possível excluir o Admin principal" : "Remover permanentemente"}
                                         >
-                                            🗑️
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
                                         </button>
                                     </td>
                                 </tr>
