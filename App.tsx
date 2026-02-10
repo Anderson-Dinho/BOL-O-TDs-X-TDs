@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { CompetitionProvider } from './context/CompetitionContext';
 import LoginScreen from './components/LoginScreen';
 import SetupScreen from './components/SetupScreen';
@@ -7,29 +7,30 @@ import ResultsScreen from './components/ResultsScreen';
 import AdminDashboard from './components/AdminDashboard';
 import { Page, User } from './types';
 import useLocalStorage from './hooks/useLocalStorage';
+import { INITIAL_USERS } from './data/users';
 
 function App() {
-  const [users, setUsers] = useLocalStorage<User[]>('competition-users', []);
+  // Store only locally added users in localStorage
+  const [localUsers, setLocalUsers] = useLocalStorage<User[]>('competition-local-users', []);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>('setup');
   
-  // Seed the Super Admin user on initialization
-  useEffect(() => {
-    const adminUser = users.find(u => u.username === 'AndersonSilva');
-    if (!adminUser) {
-        const newAdmin: User = {
-            username: 'AndersonSilva',
-            password: 'admin',
-            role: 'admin'
-        };
-        // Add admin while preserving existing users (if any, though in this flow we control them)
-        setUsers(prev => [...prev, newAdmin]);
-    }
-  }, [users, setUsers]);
+  // Combine INITIAL_USERS (code) with localUsers (localStorage)
+  // INITIAL_USERS take precedence in terms of existence, but we merge unique usernames
+  const users = useMemo(() => {
+      const combined = [...INITIAL_USERS];
+      localUsers.forEach(localUser => {
+          // Only add if username doesn't exist in INITIAL_USERS (case insensitive)
+          if (!combined.some(u => u.username.toLowerCase() === localUser.username.toLowerCase())) {
+              combined.push(localUser);
+          }
+      });
+      return combined;
+  }, [localUsers]);
 
   const handleLoginSuccess = (username: string) => {
-    const user = users.find(u => u.username === username);
+    const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
     if (user) {
         setIsLoggedIn(true);
         setCurrentUser(user);
@@ -48,12 +49,17 @@ function App() {
 
   // Admin Actions
   const handleAddUser = (newUser: User) => {
-    setUsers(prev => [...prev, newUser]);
+    setLocalUsers(prev => [...prev, newUser]);
   };
 
   const handleDeleteUser = (usernameToDelete: string) => {
-    if (usernameToDelete === 'AndersonSilva') return; // Protect admin
-    setUsers(prev => prev.filter(u => u.username !== usernameToDelete));
+    // Can only delete users that are in localUsers
+    const isLocal = localUsers.some(u => u.username === usernameToDelete);
+    if (isLocal) {
+        setLocalUsers(prev => prev.filter(u => u.username !== usernameToDelete));
+    } else {
+        alert('Este usuário faz parte da configuração fixa do sistema e não pode ser excluído por aqui.');
+    }
   };
 
   if (!isLoggedIn) {
@@ -65,7 +71,7 @@ function App() {
     );
   }
 
-  // Admin Dashboard View (No CompetitionContext needed ideally, but kept separate)
+  // Admin Dashboard View
   if (currentPage === 'admin-dashboard' && currentUser?.role === 'admin') {
       return (
           <AdminDashboard 
