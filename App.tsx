@@ -16,26 +16,44 @@ function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>('setup');
   
-  // Mescla usuários do código (Deploy) com locais (Admin)
-  const users = useMemo(() => {
-      // Prioridade: Users no código sobrescrevem configurações antigas se necessário
+  // Sincroniza INITIAL_USERS com localUsers na montagem (Lógica de Importação)
+  // Garante que o Admin tenha a config mais recente para editar, mas respeita edições locais existentes.
+  useEffect(() => {
+    setLocalUsers(prev => {
+        const newUsers = [...prev];
+        let changed = false;
+        
+        INITIAL_USERS.forEach(initUser => {
+            // Se o usuário existe no código mas não localmente, adiciona.
+            // NÃO sobrescrevemos dados locais aqui, preservando o estado de "Rascunho" do Admin.
+            if (!newUsers.some(u => u.username.toLowerCase() === initUser.username.toLowerCase())) {
+                newUsers.push(initUser);
+                changed = true;
+            }
+        });
+        
+        return changed ? newUsers : prev;
+    });
+  }, [setLocalUsers]);
+
+  // 'effectiveUsers' é a Lista de Autoridade para Segurança em Tempo de Execução.
+  // Ela impõe as regras definidas em 'INITIAL_USERS' (o código) sobre o estado local.
+  // Isso garante que usuários suspensos não possam contornar o bloqueio manipulando o armazenamento local.
+  const effectiveUsers = useMemo(() => {
       const combined = [...localUsers];
       
       INITIAL_USERS.forEach(initUser => {
           const localIndex = combined.findIndex(u => u.username.toLowerCase() === initUser.username.toLowerCase());
           
           if (localIndex === -1) {
-              // Se não existe localmente, adiciona
               combined.push(initUser);
           } else {
-              // Se existe localmente, verificamos se o código é "mais autoritativo" (ex: status isActive mudou no código)
-              // Para garantir que o deploy funcione, o estado do INITIAL_USERS deve ter peso.
-              // Mas precisamos manter o 'lastLogin' local.
+              // Impõe o Estado do Servidor para campos críticos de segurança durante o Runtime
               combined[localIndex] = {
                   ...combined[localIndex],
-                  role: initUser.role, // Função é definida pelo código
-                  isActive: initUser.isActive, // Status é definido pelo código (Remoto)
-                  password: initUser.password // Senha definida pelo código
+                  role: initUser.role, 
+                  isActive: initUser.isActive, 
+                  password: initUser.password 
               };
           }
       });
@@ -45,7 +63,7 @@ function App() {
   // Checagem de Segurança Contínua
   useEffect(() => {
     if (isLoggedIn && currentUser) {
-        // 1. Bloqueio Global (Maintenance Mode)
+        // 1. Bloqueio Global (Modo Manutenção)
         if (!SYSTEM_CONFIG.active && currentUser.role !== 'admin') {
             setIsLoggedIn(false);
             setCurrentUser(null);
@@ -54,17 +72,18 @@ function App() {
         }
 
         // 2. Suspensão Individual
-        const updatedUserRecord = users.find(u => u.username.toLowerCase() === currentUser.username.toLowerCase());
+        // Verificamos contra 'effectiveUsers' para garantir que banimentos remotos sejam respeitados imediatamente
+        const updatedUserRecord = effectiveUsers.find(u => u.username.toLowerCase() === currentUser.username.toLowerCase());
         if (updatedUserRecord && updatedUserRecord.isActive === false) {
              setIsLoggedIn(false);
              setCurrentUser(null);
              alert("Sua conta foi suspensa remotamente pelo administrador.");
         }
     }
-  }, [isLoggedIn, currentUser, users]);
+  }, [isLoggedIn, currentUser, effectiveUsers]);
 
   const handleLoginSuccess = (username: string) => {
-    const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+    const user = effectiveUsers.find(u => u.username.toLowerCase() === username.toLowerCase());
     
     if (user) {
         // Validações de segurança no login
@@ -108,7 +127,7 @@ function App() {
         const index = prev.findIndex(u => u.username.toLowerCase() === updatedUser.username.toLowerCase());
         if (index !== -1) {
             const newArr = [...prev];
-            // Preserva lastLogin se não vier no update
+            // Atualiza o estado local diretamente (Rascunho)
             newArr[index] = { ...newArr[index], ...updatedUser }; 
             return newArr;
         } else {
@@ -125,7 +144,7 @@ function App() {
     return (
       <LoginScreen
         onLoginSuccess={handleLoginSuccess}
-        users={users}
+        users={effectiveUsers}
         isSystemLocked={!SYSTEM_CONFIG.active}
       />
     );
@@ -137,7 +156,8 @@ function App() {
       if (currentUser?.role === 'admin') {
         return (
             <AdminDashboard 
-                users={users}
+                // CRUCIAL: Dashboard edita 'localUsers' (O Estado de Rascunho), não 'effectiveUsers'
+                users={localUsers}
                 onUpdateUser={handleUpdateUser}
                 onDeleteUser={handleDeleteUser}
                 onLogout={handleLogout}
