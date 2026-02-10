@@ -122,7 +122,7 @@ const RunInput: React.FC<{
                 title={"Marcar como SAT (Sem Aproveitamento Técnico)"}
                 disabled={isDisabled}
             >
-                SAT
+                S.A.T.
             </button>
             <button 
                 onClick={handleResetClick} 
