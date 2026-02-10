@@ -118,16 +118,17 @@ const RunInput: React.FC<{
             />
             <button 
                 onClick={handleSatClick} 
-                className={`px-3 py-2 rounded text-xs font-bold transition ${isSat ? 'bg-red-500 text-white' : 'bg-gray-600 hover:bg-red-500'} disabled:opacity-50 disabled:cursor-not-allowed`}
-                title={"Marcar como SAT (Sem Aproveitamento Técnico)"}
+                className={`px-3 py-2 rounded text-xs font-bold transition notranslate ${isSat ? 'bg-red-500 text-white' : 'bg-gray-600 hover:bg-red-500'} disabled:opacity-50 disabled:cursor-not-allowed`}
+                title={"Marcar como S.A.T. (Sem Aproveitamento Técnico)"}
                 disabled={isDisabled}
+                translate="no"
             >
                 S.A.T.
             </button>
             <button 
                 onClick={handleResetClick} 
                 className={`w-9 h-9 flex items-center justify-center rounded text-lg font-bold transition bg-gray-600 hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed`}
-                title="Limpar tempo / Desfazer SAT"
+                title="Limpar tempo / Desfazer S.A.T."
                 disabled={value === null || locked}
             >
                 🔄
