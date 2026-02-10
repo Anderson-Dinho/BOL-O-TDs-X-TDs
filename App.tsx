@@ -28,11 +28,12 @@ function App() {
   }, [localUsers]);
 
   // Security Check: If system is locked and user is not admin, log them out immediately
+  // This handles the case where the system is locked WHILE a user is logged in (after refresh/redeploy)
   useEffect(() => {
     if (isLoggedIn && currentUser && !SYSTEM_CONFIG.active && currentUser.role !== 'admin') {
         setIsLoggedIn(false);
         setCurrentUser(null);
-        alert("O sistema foi bloqueado temporariamente pelo Administrador.");
+        // We do not alert here to avoid double alerts on render, the login screen will show the status
     }
   }, [isLoggedIn, currentUser]);
 
@@ -40,9 +41,8 @@ function App() {
     const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
     
     if (user) {
-        // Prevent login if system is locked and user is not admin
+        // Double check access (LoginScreen handles the visual error, this is a safety guard)
         if (!SYSTEM_CONFIG.active && user.role !== 'admin') {
-            alert("ACESSO SUSPENSO: O sistema está bloqueado pelo administrador no momento.");
             return;
         }
 
@@ -75,17 +75,12 @@ function App() {
     }
   };
 
-  // Blocked Screen Render (Safety net)
-  if (!SYSTEM_CONFIG.active && !isLoggedIn) {
-      // We pass a prop to LoginScreen to indicate system status if we wanted, 
-      // but the alert in handleLoginSuccess handles the feedback.
-  }
-
   if (!isLoggedIn) {
     return (
       <LoginScreen
         onLoginSuccess={handleLoginSuccess}
         users={users}
+        isSystemLocked={!SYSTEM_CONFIG.active}
       />
     );
   }
@@ -120,8 +115,8 @@ function App() {
       <div className="min-h-screen bg-gray-900 text-gray-100 font-sans flex flex-col">
         {/* System Status Banner for Admin */}
         {!SYSTEM_CONFIG.active && currentUser?.role === 'admin' && (
-            <div className="bg-red-600 text-white text-center py-1 text-sm font-bold animate-pulse">
-                ⚠ SISTEMA BLOQUEADO PARA USUÁRIOS EXTERNOS ⚠
+            <div className="bg-red-600 text-white text-center py-2 text-sm font-bold flex justify-center items-center gap-2 shadow-lg">
+                <span>⛔ SISTEMA SUSPENSO PARA ORGANIZADORES ⛔</span>
             </div>
         )}
 

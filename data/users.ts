@@ -4,7 +4,7 @@ import { User } from '../types';
 // active: true = Sistema liberado para todos
 // active: false = Apenas Admin pode acessar
 export const SYSTEM_CONFIG = {
-  active: true
+  active: false
 };
 
 export const INITIAL_USERS: User[] = [
