@@ -35,8 +35,9 @@ const RunInput: React.FC<{
     onChange: (value: RunTime | null) => void, 
     timeLimit: number,
     locked?: boolean,
-    alwaysAuthorized?: boolean
-}> = ({ value, onChange, timeLimit, locked = false, alwaysAuthorized = false }) => {
+    alwaysAuthorized?: boolean,
+    label?: string
+}> = ({ value, onChange, timeLimit, locked = false, alwaysAuthorized = false, label }) => {
     const [inputValue, setInputValue] = useState(value === 'SAT' ? '' : (value || ''));
     const [allowOverLimit, setAllowOverLimit] = useState(false);
 
@@ -99,23 +100,26 @@ const RunInput: React.FC<{
     const isOverLimitValue = typeof value === 'number' && value > timeLimit;
 
     return (
-        <div className="flex items-center space-x-1">
-            <input
-                type="number"
-                step="0.001"
-                value={inputValue}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                placeholder="0.00"
-                className={`w-24 p-2 rounded text-center text-white transition-colors
-                    ${isSat ? 'border-red-500 bg-red-900/50' : ''} 
-                    ${isOverLimitValue ? 'border-orange-500 text-orange-300' : ''}
-                    ${locked && !isSat ? 'bg-gray-800 border-gray-600 text-gray-400' : (!isSat && !isOverLimitValue ? 'bg-gray-700 border-gray-600 focus:ring-yellow-500 focus:border-yellow-500' : '')} 
-                    ${isOverLimitValue && !locked ? 'bg-gray-700' : ''}
-                    ${isDisabled ? 'opacity-70 cursor-not-allowed' : ''}
-                `}
-                disabled={isDisabled}
-            />
+        <div className="flex items-end space-x-1">
+            <div className="flex flex-col items-center">
+                {label && <span className="text-xs font-bold text-gray-400 mb-1 whitespace-nowrap">{label}</span>}
+                <input
+                    type="number"
+                    step="0.001"
+                    value={inputValue}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="0.00"
+                    className={`w-24 p-2 rounded text-center text-white transition-colors
+                        ${isSat ? 'border-red-500 bg-red-900/50' : ''} 
+                        ${isOverLimitValue ? 'border-orange-500 text-orange-300' : ''}
+                        ${locked && !isSat ? 'bg-gray-800 border-gray-600 text-gray-400' : (!isSat && !isOverLimitValue ? 'bg-gray-700 border-gray-600 focus:ring-yellow-500 focus:border-yellow-500' : '')} 
+                        ${isOverLimitValue && !locked ? 'bg-gray-700' : ''}
+                        ${isDisabled ? 'opacity-70 cursor-not-allowed' : ''}
+                    `}
+                    disabled={isDisabled}
+                />
+            </div>
             <button 
                 onClick={handleSatClick} 
                 className={`px-3 py-2 rounded text-xs font-bold transition notranslate ${isSat ? 'bg-red-500 text-white' : 'bg-gray-600 hover:bg-red-500'} disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -308,6 +312,7 @@ const CompetitionScreen: React.FC<CompetitionScreenProps> = ({ goToResults, goTo
                                                   onChange={(time) => updateRunTime(pair.id, roundIndex, time)}
                                                   timeLimit={settings.timeLimit}
                                                   locked={isLocked}
+                                                  label="Tempo / Cl."
                                               />
                                           </div>
                                       </div>
@@ -358,6 +363,7 @@ const CompetitionScreen: React.FC<CompetitionScreenProps> = ({ goToResults, goTo
                                 timeLimit={settings.timeLimit}
                                 locked={isFinalLocked}
                                 alwaysAuthorized={true}
+                                label="Tempo / Final"
                             />
                         </div>
                     </div>
