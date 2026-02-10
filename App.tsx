@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { CompetitionProvider } from './context/CompetitionContext';
 import LoginScreen from './components/LoginScreen';
@@ -94,11 +93,12 @@ function App() {
   return (
     <CompetitionProvider currentUser={currentUser?.username || ''}>
       <div className="min-h-screen bg-gray-900 text-gray-100 font-sans flex flex-col">
-        <header className="bg-gray-800 shadow-lg p-4 flex justify-between items-center">
-          <h1 className="text-xl md:text-3xl font-bold text-yellow-400 tracking-wider">
+        <header className="bg-gray-800 shadow-lg p-4 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
+          <div className="hidden md:block md:w-1/3"></div>
+          <h1 className="text-xl md:text-3xl font-bold text-yellow-400 tracking-wider text-center md:w-1/3 whitespace-nowrap">
             Competição TODOS x TODOS
           </h1>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-full md:w-1/3 justify-center md:justify-end">
             <div className="flex flex-col items-end">
                 <span className="text-sm text-gray-400 hidden md:inline">Logado como:</span>
                 <span className="text-sm font-bold text-white">{currentUser?.username}</span>

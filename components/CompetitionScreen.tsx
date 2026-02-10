@@ -171,7 +171,7 @@ const CompetitionScreen: React.FC<CompetitionScreenProps> = ({ goToResults, goTo
         <h2 className="text-2xl font-bold text-yellow-400">Nenhuma dupla foi gerada.</h2>
         <p className="text-gray-400 mt-2">Vá para a tela de configuração para adicionar competidores e iniciar a competição.</p>
         <button onClick={goToSetup} className="mt-6 px-6 py-2 bg-yellow-400 text-gray-900 font-semibold rounded-md hover:bg-yellow-500 transition">
-          Ir para Configuração
+          Ir para Cadastros
         </button>
       </div>
     );
@@ -247,7 +247,7 @@ const CompetitionScreen: React.FC<CompetitionScreenProps> = ({ goToResults, goTo
             💾 Salvar Backup
           </button>
           <button onClick={goToSetup} className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition">
-            ⬅ Voltar para Setup
+            ⬅ Voltar para Cadastros
           </button>
           <button onClick={goToResults} className="px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition">
             Ver Resultados

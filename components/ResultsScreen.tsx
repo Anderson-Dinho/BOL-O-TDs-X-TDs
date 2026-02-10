@@ -89,8 +89,8 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ goToSetup, goToCompetitio
             <button onClick={goToCompetition} className="px-5 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition">
               ⬅ Voltar para Baterias
             </button>
-            <button onClick={goToSetup} className="px-5 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-500 transition">
-              Setup
+            <button onClick={goToSetup} className="px-5 py-2 bg-yellow-400 text-gray-900 font-semibold rounded-md hover:bg-yellow-500 transition">
+              Cadastros
             </button>
         </div>
       </div>
