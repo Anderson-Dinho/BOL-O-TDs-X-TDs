@@ -1,21 +1,29 @@
 import { User } from '../types';
 
-// Configuração Global do Sistema
-// active: true = Sistema liberado para todos
-// active: false = Apenas Admin pode acessar
+// MUDANÇA DE CONFIGURAÇÃO DE ACESSO
+// Data da geração: 10/02/2026, 14:10:51
+
 export const SYSTEM_CONFIG = {
-  active: false
+  active: true // SISTEMA LIBERADO
 };
 
 export const INITIAL_USERS: User[] = [
   {
     "username": "AndersonSilva",
     "password": "admin",
-    "role": "admin"
+    "role": "admin",
+    "isActive": true
+  },
+  {
+    "username": "mano",
+    "password": "mano",
+    "role": "organizer",
+    "isActive": true
   },
   {
     "username": "tiao",
     "password": "tiao",
-    "role": "organizer"
+    "role": "organizer",
+    "isActive": true
   }
 ];

@@ -38,4 +38,6 @@ export interface User {
   username: string;
   password: string;
   role: 'admin' | 'organizer';
+  isActive?: boolean; // Permite suspender usuários individualmente
+  lastLogin?: string; // Data/Hora do último acesso
 }

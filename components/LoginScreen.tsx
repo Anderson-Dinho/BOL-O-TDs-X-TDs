@@ -20,10 +20,18 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, users, isSyst
     
     // Check password exactly
     if (user && user.password === password) {
+      // 1. Check Global Lock
       if (isSystemLocked && user.role !== 'admin') {
           setError('SISTEMA PAUSADO: Apenas o administrador pode acessar no momento.');
           return;
       }
+
+      // 2. Check Individual Suspension
+      if (user.isActive === false) {
+          setError('CONTA SUSPENSA: Entre em contato com o administrador.');
+          return;
+      }
+
       setError('');
       onLoginSuccess(user.username);
     } else {
