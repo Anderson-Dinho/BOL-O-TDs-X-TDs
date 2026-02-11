@@ -76,6 +76,16 @@ const RulesScreen: React.FC<RulesScreenProps> = ({ goToSetup, onLogout }) => {
                     <label htmlFor="eventName" className="block text-sm font-medium text-gray-300">Nome do Evento</label>
                     <input type="text" value={settings.eventName} onChange={(e) => updateSettings({...settings, eventName: e.target.value})} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md p-2 text-white" />
                 </div>
+                <div>
+                    <label htmlFor="eventDate" className="block text-sm font-medium text-gray-300">Data do Evento</label>
+                    <input 
+                        type="date" 
+                        id="eventDate"
+                        value={settings.eventDate} 
+                        onChange={(e) => updateSettings({...settings, eventDate: e.target.value})} 
+                        className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md p-2 text-white" 
+                    />
+                </div>
                  <div>
                     <label htmlFor="maxHc" className="block text-sm font-medium text-gray-300">HC Máximo Permitido (Soma)</label>
                     <input 
