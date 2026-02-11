@@ -1,11 +1,13 @@
 
 import React, { createContext, useContext, ReactNode, useCallback } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
-import { Competitor, EventSettings, Pair, RunTime, Modality } from '../types';
+import { Competitor, EventSettings, Pair, RunTime, Modality, HandicapRule } from '../types';
 
 interface CompetitionContextType {
   settings: EventSettings;
   updateSettings: (newSettings: Partial<EventSettings>) => void;
+  handicapRules: HandicapRule[];
+  updateHandicapRules: (rules: HandicapRule[]) => void;
   competitors: Competitor[];
   addCompetitor: (competitor: Omit<Competitor, 'id'>) => void;
   updateCompetitor: (id: string, updates: Partial<Competitor>) => void; // Nova função
@@ -33,6 +35,14 @@ const initialSettings: EventSettings = {
   timeLimit: 15, 
   maxHc: 7 
 };
+
+// Regras padrão iniciais (caso o usuário não configure nada)
+const initialRules: HandicapRule[] = [
+    { maxHc: 3.5, runCount: 1 },
+    { maxHc: 4.5, runCount: 2 },
+    { maxHc: 6.5, runCount: 3 },
+    { maxHc: 100, runCount: 4 } // Fallback para HCs altos
+];
 
 // Helper para gerar IDs compatível com todos os navegadores/ambientes
 const generateId = () => {
@@ -91,12 +101,14 @@ const organizePairs = (pairs: Pair[]): Pair[] => {
 export const CompetitionProvider: React.FC<{ children: ReactNode; currentUser: string }> = ({ children, currentUser }) => {
   // Use keys that include the currentUser to segregate data
   const settingsKey = `competition-settings-${currentUser}`;
+  const rulesKey = `competition-rules-${currentUser}`;
   const competitorsKey = `competition-competitors-${currentUser}`;
   const pairsKey = `competition-pairs-${currentUser}`;
   const lockedRoundsKey = `competition-locked-rounds-${currentUser}`;
   const finalLockedKey = `competition-final-locked-${currentUser}`;
 
   const [settings, setSettings] = useLocalStorage<EventSettings>(settingsKey, initialSettings);
+  const [handicapRules, setHandicapRules] = useLocalStorage<HandicapRule[]>(rulesKey, initialRules);
   const [competitors, setCompetitors] = useLocalStorage<Competitor[]>(competitorsKey, []);
   const [pairs, setPairs] = useLocalStorage<Pair[]>(pairsKey, []);
   
@@ -107,6 +119,10 @@ export const CompetitionProvider: React.FC<{ children: ReactNode; currentUser: s
   const updateSettings = useCallback((newSettings: Partial<EventSettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
   }, [setSettings]);
+
+  const updateHandicapRules = useCallback((rules: HandicapRule[]) => {
+    setHandicapRules(rules);
+  }, [setHandicapRules]);
 
   const addCompetitor = useCallback((competitor: Omit<Competitor, 'id'>) => {
     const newCompetitor = { ...competitor, id: generateId() };
@@ -142,13 +158,20 @@ export const CompetitionProvider: React.FC<{ children: ReactNode; currentUser: s
     setIsFinalLocked(false);
   }, [setCompetitors, setPairs, setLockedRounds, setIsFinalLocked]);
 
-  const getNumberOfQualifyingRuns = (combinedHc: number): number => {
-    // Retorna APENAS o número de corridas classificatórias (sem contar a final)
-    if (combinedHc <= 3.5) return 1;
-    if (combinedHc <= 4.5) return 2;
-    if (combinedHc <= 6.5) return 3;
-    return 4;
-  };
+  const getNumberOfQualifyingRuns = useCallback((combinedHc: number): number => {
+    // Ordena as regras por HC (crescente) para garantir verificação correta
+    const sortedRules = [...handicapRules].sort((a, b) => a.maxHc - b.maxHc);
+    
+    // Encontra a primeira regra que satisfaz "combinedHc <= regra.maxHc"
+    const matchedRule = sortedRules.find(rule => combinedHc <= rule.maxHc);
+    
+    if (matchedRule) {
+        return matchedRule.runCount;
+    }
+    
+    // Se a soma for maior que todas as regras, usa a última regra definida ou fallback padrão
+    return sortedRules.length > 0 ? sortedRules[sortedRules.length - 1].runCount : 1;
+  }, [handicapRules]);
 
   const generatePairs = useCallback(() => {
     const cabeceiros = competitors.filter(c => c.modality === Modality.Cabeca || c.modality === Modality.Ambas);
@@ -179,7 +202,7 @@ export const CompetitionProvider: React.FC<{ children: ReactNode; currentUser: s
     setPairs(interleavedPairs);
     setLockedRounds([]);
     setIsFinalLocked(false);
-  }, [competitors, settings.maxHc, setPairs, setLockedRounds, setIsFinalLocked]);
+  }, [competitors, settings.maxHc, getNumberOfQualifyingRuns, setPairs, setLockedRounds, setIsFinalLocked]);
 
   // Nova função para atualizar duplas mantendo dados existentes
   const updatePairsPreservingData = useCallback(() => {
@@ -204,24 +227,34 @@ export const CompetitionProvider: React.FC<{ children: ReactNode; currentUser: s
         if (combinedHc <= settings.maxHc) {
              const key = `${cabeceiro.id}-${pezeiro.id}`;
              const existingPair = currentPairsMap.get(key);
+             const targetRuns = getNumberOfQualifyingRuns(combinedHc);
 
              if (existingPair) {
-                 // ATUALIZAR: Mantém ID, tempos e status. Atualiza ref de nomes/HC se mudaram.
+                 // Verifica se o número de corridas mudou (devido a mudança de regra ou HC)
+                 let currentRuns = existingPair.qualifyingRuns;
+                 if (currentRuns.length < targetRuns) {
+                     // Adiciona slots vazios se aumentou
+                     currentRuns = [...currentRuns, ...Array(targetRuns - currentRuns.length).fill(null)];
+                 } else if (currentRuns.length > targetRuns) {
+                     // Remove excesso se diminuiu (corta do final)
+                     currentRuns = currentRuns.slice(0, targetRuns);
+                 }
+
                  updatedPairsList.push({
                      ...existingPair,
-                     cabeceiro, // Atualiza objeto do competidor (caso nome tenha mudado)
+                     cabeceiro,
                      pezeiro,
-                     combinedHc // Recalcula HC
+                     combinedHc,
+                     qualifyingRuns: currentRuns
                  });
              } else {
                  // NOVO: Cria nova dupla zerada
-                 const numRuns = getNumberOfQualifyingRuns(combinedHc);
                  updatedPairsList.push({
                     id: generateId(),
                     cabeceiro,
                     pezeiro,
                     combinedHc,
-                    qualifyingRuns: Array(numRuns).fill(null),
+                    qualifyingRuns: Array(targetRuns).fill(null),
                     finalRun: null,
                     disqualified: false,
                   });
@@ -234,7 +267,7 @@ export const CompetitionProvider: React.FC<{ children: ReactNode; currentUser: s
     const interleavedPairs = organizePairs(updatedPairsList);
     setPairs(interleavedPairs);
     // Nota: Não resetamos lockedRounds aqui, pois queremos manter o estado dos tempos já lançados
-  }, [competitors, pairs, settings.maxHc, setPairs]);
+  }, [competitors, pairs, settings.maxHc, getNumberOfQualifyingRuns, setPairs]);
 
   const updateRunTime = useCallback((pairId: string, runIndex: number, time: RunTime) => {
     setPairs(prevPairs =>
@@ -266,9 +299,10 @@ export const CompetitionProvider: React.FC<{ children: ReactNode; currentUser: s
     setPairs([]);
     setCompetitors([]);
     setSettings(initialSettings);
+    setHandicapRules(initialRules); // Reset rules too
     setLockedRounds([]);
     setIsFinalLocked(false);
-  }, [setCompetitors, setPairs, setSettings, setLockedRounds, setIsFinalLocked]);
+  }, [setCompetitors, setPairs, setSettings, setHandicapRules, setLockedRounds, setIsFinalLocked]);
 
   const toggleRoundLock = useCallback((roundIndex: number) => {
     setLockedRounds(prev => {
@@ -287,6 +321,7 @@ export const CompetitionProvider: React.FC<{ children: ReactNode; currentUser: s
   const exportData = useCallback(() => {
     const data = {
         settings,
+        handicapRules,
         competitors,
         pairs,
         lockedRounds,
@@ -305,7 +340,7 @@ export const CompetitionProvider: React.FC<{ children: ReactNode; currentUser: s
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [settings, competitors, pairs, lockedRounds, isFinalLocked]);
+  }, [settings, handicapRules, competitors, pairs, lockedRounds, isFinalLocked]);
 
   const importData = useCallback((jsonContent: string) => {
     try {
@@ -314,6 +349,9 @@ export const CompetitionProvider: React.FC<{ children: ReactNode; currentUser: s
             throw new Error("Formato de arquivo inválido");
         }
         setSettings(parsed.settings);
+        if (parsed.handicapRules && Array.isArray(parsed.handicapRules)) {
+             setHandicapRules(parsed.handicapRules);
+        }
         setCompetitors(parsed.competitors);
         setPairs(parsed.pairs || []);
         setLockedRounds(parsed.lockedRounds || []);
@@ -323,11 +361,13 @@ export const CompetitionProvider: React.FC<{ children: ReactNode; currentUser: s
         console.error("Erro ao importar dados:", error);
         return false;
     }
-  }, [setSettings, setCompetitors, setPairs, setLockedRounds, setIsFinalLocked]);
+  }, [setSettings, setHandicapRules, setCompetitors, setPairs, setLockedRounds, setIsFinalLocked]);
 
   const value = {
     settings,
     updateSettings,
+    handicapRules,
+    updateHandicapRules,
     competitors,
     addCompetitor,
     updateCompetitor, // Exported

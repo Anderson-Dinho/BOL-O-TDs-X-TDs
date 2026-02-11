@@ -5,10 +5,11 @@ import { Competitor, Modality } from '../types';
 
 interface SetupScreenProps {
   goToCompetition: () => void;
+  goToRules: () => void; // Nova prop
   onLogout: () => void;
 }
 
-const SetupScreen: React.FC<SetupScreenProps> = ({ goToCompetition, onLogout }) => {
+const SetupScreen: React.FC<SetupScreenProps> = ({ goToCompetition, goToRules, onLogout }) => {
   const { settings, updateSettings, competitors, addCompetitor, updateCompetitor, removeCompetitors, generatePairs, updatePairsPreservingData, resetCompetition, pairs, exportData, importData } = useCompetition();
   const [newCompetitor, setNewCompetitor] = useState<Omit<Competitor, 'id'>>({
     fullName: '',
@@ -145,27 +146,24 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ goToCompetition, onLogout }) 
 
   return (
     <div className="space-y-8 relative pb-20">
-      {/* Settings Section */}
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-yellow-400 mb-4">Configurações do Evento</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <label htmlFor="eventName" className="block text-sm font-medium text-gray-300">Nome do Evento</label>
-            <input type="text" name="eventName" id="eventName" value={settings.eventName} onChange={handleSettingsChange} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm p-2 text-white" />
-          </div>
-          <div>
-            <label htmlFor="eventDate" className="block text-sm font-medium text-gray-300">Data do Evento</label>
-            <input type="date" name="eventDate" id="eventDate" value={settings.eventDate} onChange={handleSettingsChange} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm p-2 text-white" />
-          </div>
-          <div>
-            <label htmlFor="timeLimit" className="block text-sm font-medium text-gray-300">Tempo Limite (segundos)</label>
-            <input type="number" name="timeLimit" id="timeLimit" value={settings.timeLimit} onChange={handleSettingsChange} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm p-2 text-white" />
-          </div>
-          <div>
-            <label htmlFor="maxHc" className="block text-sm font-medium text-gray-300">HC Máximo da Dupla</label>
-            <input type="number" name="maxHc" id="maxHc" value={settings.maxHc} onChange={handleSettingsChange} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm p-2 text-white" />
-          </div>
+      <div className="flex justify-between items-center mb-6">
+          <button 
+            onClick={goToRules}
+            className="text-gray-400 hover:text-white flex items-center gap-1 transition"
+          >
+              ⬅ Voltar para Regras
+          </button>
+      </div>
+
+      {/* Info Rápida de Configuração */}
+      <div className="bg-gray-800 p-4 rounded-lg shadow-lg flex flex-wrap gap-4 items-center justify-between border-l-4 border-blue-500">
+        <div>
+            <h2 className="text-xl font-bold text-white">{settings.eventName}</h2>
+            <p className="text-gray-400 text-sm">Data: {settings.eventDate} | Limite: {settings.timeLimit}s | HC Máx: {settings.maxHc}</p>
         </div>
+        <button onClick={goToRules} className="text-blue-400 hover:text-blue-300 text-sm underline">
+            Editar Configurações
+        </button>
       </div>
 
       {/* Add Competitor Section */}

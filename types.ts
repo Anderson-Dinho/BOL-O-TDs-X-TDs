@@ -20,6 +20,11 @@ export interface EventSettings {
   maxHc: number;
 }
 
+export interface HandicapRule {
+  maxHc: number;    // Ex: Soma até 4.5
+  runCount: number; // Ex: Corre 2 bois
+}
+
 export type RunTime = number | 'SAT';
 
 export interface Pair {
@@ -32,7 +37,7 @@ export interface Pair {
   disqualified: boolean;
 }
 
-export type Page = 'setup' | 'competition' | 'results' | 'admin-dashboard';
+export type Page = 'rules' | 'setup' | 'competition' | 'results' | 'admin-dashboard';
 
 export interface User {
   username: string;

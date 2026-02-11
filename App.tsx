@@ -1,7 +1,9 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { CompetitionProvider } from './context/CompetitionContext';
 import LoginScreen from './components/LoginScreen';
 import SetupScreen from './components/SetupScreen';
+import RulesScreen from './components/RulesScreen';
 import CompetitionScreen from './components/CompetitionScreen';
 import ResultsScreen from './components/ResultsScreen';
 import AdminDashboard from './components/AdminDashboard';
@@ -111,7 +113,7 @@ function App() {
         if (user.role === 'admin') {
             setCurrentPage('admin-dashboard');
         } else {
-            setCurrentPage('setup');
+            setCurrentPage('rules'); // MUDANÇA: Começa pelas regras
         }
     }
   };
@@ -165,20 +167,22 @@ function App() {
             />
         );
       } else {
-          setCurrentPage('setup'); // Redireciona organizadores perdidos
+          setCurrentPage('rules'); // Redireciona organizadores perdidos
       }
   }
 
   const renderPage = () => {
     switch (currentPage) {
+      case 'rules':
+        return <RulesScreen goToSetup={() => setCurrentPage('setup')} onLogout={handleLogout} />;
       case 'setup':
-        return <SetupScreen goToCompetition={() => setCurrentPage('competition')} onLogout={handleLogout} />;
+        return <SetupScreen goToCompetition={() => setCurrentPage('competition')} goToRules={() => setCurrentPage('rules')} onLogout={handleLogout} />;
       case 'competition':
         return <CompetitionScreen goToResults={() => setCurrentPage('results')} goToSetup={() => setCurrentPage('setup')} />;
       case 'results':
         return <ResultsScreen goToSetup={() => setCurrentPage('setup')} goToCompetition={() => setCurrentPage('competition')} />;
       default:
-        return <SetupScreen goToCompetition={() => setCurrentPage('competition')} onLogout={handleLogout} />;
+        return <RulesScreen goToSetup={() => setCurrentPage('setup')} onLogout={handleLogout} />;
     }
   };
 
