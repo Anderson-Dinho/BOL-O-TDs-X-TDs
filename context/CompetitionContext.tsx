@@ -32,7 +32,7 @@ const CompetitionContext = createContext<CompetitionContextType | undefined>(und
 const initialSettings: EventSettings = { 
   eventName: 'Bolão Amigos do Laço', 
   eventDate: new Date().toISOString().split('T')[0], 
-  timeLimit: 15, 
+  timeLimit: 12, 
   maxHc: 7 
 };
 
